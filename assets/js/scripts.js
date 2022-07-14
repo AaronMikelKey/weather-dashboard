@@ -17,12 +17,14 @@ THEN I am again presented with current and future conditions for that city
 let lat, lon, areaQuery, /*query params */ weather //weather objects
 const appId = '&limit=5&appid=5929c2bed7052947ef72a623c4f08aa3'
 
-areaQuery = 'London'
 // API url to find area ID so we can get the latitude and longitude
-let areaIdUrl = 'http://api.openweathermap.org/geo/1.0/direct?q=' + areaQuery + appId
+const areaIdUrl = 'https://api.openweathermap.org/geo/1.0/direct?q='
 
 // API url for weather data
-let baseUrl = 'https://api.openweathermap.org/data/2.5/onecall?'
+const baseUrl = 'https://api.openweathermap.org/data/2.5/onecall?'
+
+// API url for icon
+const iconUrl = 'https://openweathermap.org/img/w/'  // url for icons, add .png after icon
 
 // Convert K to F, remove trailing zeroes
 let tempConvert = (kelvin) => {
@@ -31,7 +33,7 @@ let tempConvert = (kelvin) => {
 
 // Gets weather with provided lat & lon
 const getWeather = (lat, lon) => {
-	fetch(baseUrl + 'lat=' + lat + '&lon=' + lon + appId) 
+	fetch(baseUrl + 'lat=' + lat + '&lon=' + lon + appId + '&exclude=minutely,hourly') 
 		.then((response) => {
 			return response.json()
 		}).then((data) => {
@@ -39,42 +41,91 @@ const getWeather = (lat, lon) => {
 			'current': data.current,
 			'daily': data.daily
 		}
-		showWeather(weather.current, weather.daily)
-		console.log(weather)
+		showCurrentWeather(weather.current)
+		showDailyWeather(weather.daily)
 		})
 }
 
 // get area ID to append to baseUrl
-const getArea = () => {
-	fetch(areaIdUrl)
+const getArea = (areaQuery) => {
+	fetch(areaIdUrl + areaQuery + appId)
 		.then((response) => {
 			return response.json()
 		})
 		.then((data) => {
-			console.log(data[0].lat,data[0].lon)
 			lat = data[0].lat
 			lon = data[0].lon
 			return getWeather(data[0].lat, data[0].lon)
 		})
 	}
 
-
-getArea()
-// append data to page
-
-const showWeather = (current, daily) => {
+// append current weather data to page
+const showCurrentWeather = (current) => {
 	let cityName = document.getElementById('cityName')
+	let icon = document.createElement('img')
 	let currentTemp = document.getElementById('currentTemp')
 	let currentWind = document.getElementById('currentWind')
 	let currentHumidity = document.getElementById('currentHumidity')
 	let currentUV = document.getElementById('currentUV')
-	let dailyDivs = document.getElementsByClassName('days')
+	
 	cityName.textContent = areaQuery
+	cityName.appendChild(icon)
+	icon.setAttribute('src', iconUrl + current.weather[0].icon + '.png')
 	currentTemp.textContent = 'Temp: ' + tempConvert(current.temp)
 	currentWind.textContent = 'Wind: ' + current.wind_speed
 	currentHumidity.textContent = 'Humidity: ' + current.humidity
-	currentUV.textContent = 'UV Index: ' + current.uvi
-	for (let i=0;i<5;i++) {
-		dailyDivs[i].append(tempConvert(daily[i].temp.max))
+	currentUV.textContent = current.uvi
+
+	// Add background color based on UV Index rating
+	if (current.uvi < 4) {
+		currentUV.style.backgroundColor = 'rgb(1, 175, 1)'
+	} else if (current.uvi > 4 && current.uvi < 8) {
+		currentUV.style.backgroundColor =  'yellow'
+	} else {
+		currentUV.style.backgroundColor = 'rgb(255, 37, 37)'
 	}
 }
+
+// Append daily foreast weather to page
+const showDailyWeather = (daily) => {
+	for (let i=0;i<5;i++) {
+		let dailyCard = document.createElement('div')
+		let icon = document.createElement('img')
+		let temp = document.createElement('div')
+		let wind = document.createElement('div')
+		let humidity = document.createElement('div')
+		let days = document.getElementById('days')
+
+		icon.setAttribute('src', iconUrl + daily[i].weather[0].icon + '.png')
+		temp.textContent = 'Temp: ' + tempConvert(daily[i].temp.max)
+		wind.textContent = 'Wind: ' + daily[i].wind_speed
+		humidity.textContent = 'Humidity: ' + daily[i].humidity
+		dailyCard.append(icon, temp, wind, humidity)
+
+		// replace old nodes if there was a previous search
+		if (days.childElementCount == 5) {
+			days.replaceChild(dailyCard, days.children[i])
+			// else, append new nodes
+			} else {
+				days.append(dailyCard)
+			} 
+		
+	}
+}
+
+// TODO: Add function to save user search to localStorage
+
+// TODO: Add function to show recent searches from items in localStorage
+
+// TODO: Add function to run getArea() when recent search items are clicked
+
+// Start the process once user presses submit
+const form = document.getElementById('form')
+const inputWord = document.querySelector('input[type="search"]')
+
+form.addEventListener('submit', (e) => {
+	e.preventDefault()
+	areaQuery = inputWord.value
+	getArea(areaQuery)
+}
+)
