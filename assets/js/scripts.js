@@ -114,7 +114,19 @@ const showDailyWeather = (daily) => {
 }
 
 // TODO: Add function to save user search to localStorage
-
+const saveToLocal = (city) => {
+	let pastSearches
+	if (!localStorage.getItem('pastSearches')) {
+		pastSearches = []
+	} else {
+		pastSearches = Array(localStorage.getItem('pastSearches'))
+		console.log(pastSearches)
+	}
+	if (pastSearches.indexOf(city) == -1) {
+		pastSearches.push(city)
+	}
+	localStorage.setItem('pastSearches', pastSearches)
+}
 // TODO: Add function to show recent searches from items in localStorage
 
 // TODO: Add function to run getArea() when recent search items are clicked
@@ -127,5 +139,6 @@ form.addEventListener('submit', (e) => {
 	e.preventDefault()
 	areaQuery = inputWord.value
 	getArea(areaQuery)
+	saveToLocal(areaQuery)
 }
 )
