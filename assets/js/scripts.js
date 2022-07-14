@@ -45,7 +45,11 @@ const getArea = (areaQuery) => {
 
 // append current weather data to page
 const showCurrentWeather = (current, areaQuery) => {
+	
 	let cityInfo = document.getElementById('cityName')
+	while(cityInfo.firstChild) {
+		cityInfo.removeChild(cityInfo.firstChild)
+	}
 	let cityName = document.createElement('p')
 	let date = new Date(current.dt * 1000)
 	date = date.toDateString()
@@ -56,7 +60,6 @@ const showCurrentWeather = (current, areaQuery) => {
 	let currentUV = document.getElementById('currentUV')
 
 	cityName.textContent = areaQuery + ' ' + date
-	cityInfo.append(cityName, icon)
 	icon.setAttribute('src', iconUrl + current.weather[0].icon + '.png')
 	currentTemp.textContent = 'Temp: ' + tempConvert(current.temp)
 	currentWind.textContent = 'Wind: ' + current.wind_speed
@@ -71,6 +74,10 @@ const showCurrentWeather = (current, areaQuery) => {
 	} else {
 		currentUV.style.backgroundColor = 'rgb(255, 37, 37)'
 	}
+	// replace old nodes if there was a previous search
+	
+		cityInfo.append(cityName, icon)
+	
 }
 
 // Append daily foreast weather to page
