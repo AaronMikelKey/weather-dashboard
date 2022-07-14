@@ -113,25 +113,55 @@ const showDailyWeather = (daily) => {
 	}
 }
 
-// TODO: Add function to save user search to localStorage
+// Save user search to localStorage
 const saveToLocal = (city) => {
 	let pastSearches
 	if (!localStorage.getItem('pastSearches')) {
 		pastSearches = []
 	} else {
 		pastSearches = Array(localStorage.getItem('pastSearches'))
-		console.log(pastSearches)
 	}
 	if (pastSearches.indexOf(city) == -1) {
 		pastSearches.push(city)
 	}
 	localStorage.setItem('pastSearches', pastSearches)
 }
-// TODO: Add function to show recent searches from items in localStorage
+// Show recent searches from items in localStorage
+const showPastSearches = () => {
+	if (localStorage.getItem('pastSearches')) {
+		let pastSearchEl = document.getElementsByTagName('ul')[0]
+		let pastSearches = localStorage.getItem('pastSearches').split(',')
+		for (let i=0;i<pastSearches.length;i++) {
+			let listItem = document.createElement('li')
+			let link = document.createElement('a')
+			listItem.append(link)
+			link.textContent = pastSearches[i]
+			link.setAttribute('href', '#')
+			pastSearchEl.appendChild(listItem)
+		}
+		
+	}
+}
+// Run getArea() when recent search items are clicked
+const getPastSearch = () => {
+	let linksList = document.getElementsByTagName('a')
+	for (let i=0;i<linksList.length;i++) {
+		let searchTerm = linksList[i].textContent
+		linksList[i].addEventListener('click', () => {
+			getArea(searchTerm)
+		})
+	}
+}
 
-// TODO: Add function to run getArea() when recent search items are clicked
+// Show past searches once document is loaded
+document.onreadystatechange = () => {
+	if (document.readyState === 'complete') {
+		showPastSearches()
+		getPastSearch()
+	}
+}
 
-// Start the process once user presses submit
+// Start the API calls once user presses submit
 const form = document.getElementById('form')
 const inputWord = document.querySelector('input[type="search"]')
 
