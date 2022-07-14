@@ -16,7 +16,7 @@ let tempConvert = (kelvin) => {
 }
 
 // Gets weather with provided lat & lon
-const getWeather = (lat, lon) => {
+const getWeather = (lat, lon, areaQuery) => {
 	fetch(baseUrl + 'lat=' + lat + '&lon=' + lon + appId + '&exclude=minutely,hourly')
 		.then((response) => {
 			return response.json()
@@ -25,7 +25,7 @@ const getWeather = (lat, lon) => {
 				'current': data.current,
 				'daily': data.daily
 			}
-			showCurrentWeather(weather.current)
+			showCurrentWeather(weather.current, areaQuery)
 			showDailyWeather(weather.daily)
 		})
 }
@@ -39,21 +39,24 @@ const getArea = (areaQuery) => {
 		.then((data) => {
 			lat = data[0].lat
 			lon = data[0].lon
-			return getWeather(data[0].lat, data[0].lon)
+			return getWeather(data[0].lat, data[0].lon, areaQuery)
 		})
 }
 
 // append current weather data to page
-const showCurrentWeather = (current) => {
-	let cityName = document.getElementById('cityName')
+const showCurrentWeather = (current, areaQuery) => {
+	let cityInfo = document.getElementById('cityName')
+	let cityName = document.createElement('p')
+	let date = new Date(current.dt * 1000)
+	date = date.toDateString()
 	let icon = document.createElement('img')
 	let currentTemp = document.getElementById('currentTemp')
 	let currentWind = document.getElementById('currentWind')
 	let currentHumidity = document.getElementById('currentHumidity')
 	let currentUV = document.getElementById('currentUV')
 
-	cityName.textContent = areaQuery
-	cityName.appendChild(icon)
+	cityName.textContent = areaQuery + ' ' + date
+	cityInfo.append(cityName, icon)
 	icon.setAttribute('src', iconUrl + current.weather[0].icon + '.png')
 	currentTemp.textContent = 'Temp: ' + tempConvert(current.temp)
 	currentWind.textContent = 'Wind: ' + current.wind_speed
@@ -74,17 +77,22 @@ const showCurrentWeather = (current) => {
 const showDailyWeather = (daily) => {
 	for (let i = 0; i < 5; i++) {
 		let dailyCard = document.createElement('div')
+		let dateEl = document.createElement('div')
+		let date = new Date(daily[i].dt * 1000)
+		date = date.toDateString()
 		let icon = document.createElement('img')
 		let temp = document.createElement('div')
 		let wind = document.createElement('div')
 		let humidity = document.createElement('div')
 		let days = document.getElementById('days')
 
+		dateEl.textContent = date
 		icon.setAttribute('src', iconUrl + daily[i].weather[0].icon + '.png')
 		temp.textContent = 'Temp: ' + tempConvert(daily[i].temp.max)
 		wind.textContent = 'Wind: ' + daily[i].wind_speed
 		humidity.textContent = 'Humidity: ' + daily[i].humidity
-		dailyCard.append(icon, temp, wind, humidity)
+		dailyCard.append(dateEl, icon, temp, wind, humidity)
+		dailyCard.setAttribute('class', 'day' + i.toString())
 
 		// replace old nodes if there was a previous search
 		if (days.childElementCount == 5) {
@@ -107,6 +115,9 @@ const saveToLocal = (city) => {
 	}
 	if (pastSearches.indexOf(city) == -1) {
 		pastSearches.push(city)
+	}
+	if (pastSearches.length > 5) {
+		pastSearches.shift()
 	}
 	localStorage.setItem('pastSearches', pastSearches)
 }
@@ -147,7 +158,7 @@ document.onreadystatechange = () => {
 
 // Start the API calls once user presses submit
 const form = document.getElementById('form')
-const inputWord = document.querySelector('input[type="search"]')
+const inputWord = document.querySelector('input[type="text"]')
 
 form.addEventListener('submit', (e) => {
 	e.preventDefault()

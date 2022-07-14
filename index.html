@@ -5,6 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Weather Dashboard</title>
+	<link rel="stylesheet" href="./assets/css/style.css">
 </head>
 <body>
 	<header>
@@ -12,7 +13,7 @@
 	</header>
 
 	<main>
-		<section>
+		<section class="today">
 			<h2>Today's weather</h2>
 			<div id="current">
 				<div id="cityName"></div>
@@ -22,13 +23,13 @@
 				</div>
 				<div id="currentHumidity">
 				</div>
-				<div>
+				<div id="currentUVParent">
 					UV Index: <span id="currentUV"></span>
 				</div>
 			</div>
 		</section>
-		<section>
-			<h2>5-Day Forecast</h2>
+		<section class="forecast">
+			<h2 class="forecastHeader">5-Day Forecast</h2>
 			<div id="days"></div>
 		</section>
 	</main>
@@ -36,11 +37,11 @@
 		<section>
 			<h2>Search for a city:</h2>
 			<form id="form">
-				<input type="search" name="searchbar">
+				<input type="text" name="searchbar">
 				<input type="submit">
 			</form>
 		</section>
-		<section>
+		<section class="searches">
 			<h3>Recent searches</h3>
 			<ul>
 
